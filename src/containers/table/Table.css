@@ -1,0 +1,26 @@
+.playground {
+    height: 100vh;
+    background: linear-gradient(to bottom, #525252, #001F1D);
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.header {
+
+}
+
+.sidenav {
+    width: 105px;
+    height: 100%;
+    background: #001F1D;
+}
+
+.main {
+    padding: 120px 60px;
+}
+
+place {
+    width: 120px;
+    height: 158px;
+    border: 1px solid red;
+}
