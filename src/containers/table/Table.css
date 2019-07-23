@@ -19,8 +19,8 @@
     padding: 120px 60px;
 }
 
-place {
-    width: 120px;
-    height: 158px;
-    border: 1px solid red;
+.storages {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
 }

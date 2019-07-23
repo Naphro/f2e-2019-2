@@ -1,10 +1,12 @@
 import React from "react"
 // import classes from "./Table.css"
 import './Table.css'
+import StorageFinish from '../../components/storageFinish/StorageFinish'
+
 
 
 export default class Table extends React.Component {
-    data = [1, 2, 3, 4, 5, 6, 7, 8];
+    data = [1, 2, 3, 4];
 
     render() {
         return (
@@ -12,9 +14,11 @@ export default class Table extends React.Component {
                 <nav className="sidenav"></nav>
                 <header className="header"></header>
                 <main className="main">
-                    {
-                        this.data.map(item => (<div className="place" key={item}></div>))
-                    }
+                    <div className="storages">
+                        {
+                            this.data.map(item => (<StorageFinish></StorageFinish>))
+                        }
+                    </div>
                 </main>
             </div>
         )
