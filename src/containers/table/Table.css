@@ -13,6 +13,13 @@
     width: 105px;
     height: 100%;
     background: #001F1D;
+    display: flex;
+    flex-direction: column;
+    padding: 120px 0;
+}
+
+.sidenav img {
+    margin-top: 49px;
 }
 
 .main {
@@ -23,4 +30,19 @@
     width: 100%;
     display: flex;
     justify-content: flex-end;
+}
+
+.storages > div {
+    margin-left: 25px;
+}
+
+.cascades {
+    display: flex;
+    justify-content: flex-end;
+    height: calc(100vh - 120px - 158px);
+    margin-top: 47px;
+}
+
+.cascades > div {
+    margin-left: 25px;
 }

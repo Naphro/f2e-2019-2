@@ -1,0 +1,11 @@
+.cascade {
+    display: flex;
+    flex-direction: column;
+    width: 110px;
+    height: 100%;
+}
+
+.cascade__card {
+    width: 100%;
+    height: 30px;
+}
