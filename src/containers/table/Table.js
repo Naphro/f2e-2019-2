@@ -4,7 +4,7 @@ import './Table.css'
 import Foundation from '../../components/foundation/Foundation'
 import Cell from '../../components/cell/Cell'
 import Cascade from '../../components/cascade/Cascade'
-import svgMap from '../../svgs'
+import Navbar from '../../components/navbar/Navbar'
 
 const MAX_CARD_SIZE = 52;
 
@@ -14,8 +14,11 @@ export default class Table extends React.Component {
         this.state = {
             cells: new Array(4).fill(null),
             foundations: new Array(4).fill(null),
+            decks: [],
             cascades: []
         }
+        this.handleNew = this.handleNew.bind(this)
+        this.handleRestart = this.handleRestart.bind(this)
     }
 
     shuffle() {
@@ -29,38 +32,101 @@ export default class Table extends React.Component {
         let length = MAX_CARD_SIZE;
         while (length > 0) {
             const n = Math.floor(Math.random() * length);
-            decks.push(cards.splice(n, 1)[0]);
+            decks.push({name: cards.splice(n, 1)[0], draggable: false});
             length--;
         }
 
-        const cascades = [7, 7, 7, 7, 6, 6, 6, 6];
-
-        return cascades.map(size => {
-            return decks.splice(0, size);
+        console.log(decks)
+        this.setState({
+            ...this.state,
+            decks: decks
+        }, () => {
+            this.deal();
         })
     }
 
-    handleNewGame() {
-        const cards = this.shuffle();
+    deal() {
+        let cloneDecks = [...this.state.decks];
+        console.log(cloneDecks)
+        const emptyCascades = [7, 7, 7, 7, 6, 6, 6, 6];
+        const cascades = emptyCascades.map(size => {
+            return cloneDecks.splice(0, size);
+        })
         this.setState({
             ...this.state,
-            cascades: cards
-        }, () => console.log(this.state.cascades))
+            cascades: cascades
+        }, () => {
+            this.checkDraggable();
+        })
+    }
+
+    checkDraggable() {
+        const checkedCascades = this.state.cascades.map(cascade => {
+            let prevCard = null;
+            let draggable = true;
+            const reversedCascade = cascade.reverse().map(card => {
+                if (draggable) {
+                    draggable = (!prevCard || this.isDraggable(card.name, prevCard.name))
+                    prevCard = card;
+                }
+                return {...card, draggable: draggable}
+            })
+            return reversedCascade.reverse();
+        })
+
+        this.setState({
+            ...this.state,
+            cascades: checkedCascades
+        })
+    }
+
+    isDraggable(card, prevCard) {
+        if ((this.isBlack(card) && this.isBlack(prevCard)) || (this.isRed(card) && this.isRed(prevCard))) {
+            return false;
+        } else {
+            return this.getNumber(card) - this.getNumber(prevCard) === 1;
+        }
+    }
+
+    isBlack(cardname) {
+        const regexBlack = /(club)|(spade)/g;
+        return regexBlack.test(cardname);
+    }
+
+    isRed(cardname) {
+        const regexRed = /(diamond)|(heart)/g;
+        return regexRed.test(cardname);
+    }
+
+    getNumber(cardname) {
+        const regex = /\d/g;
+        return cardname.match(regex).join('');
+    }
+
+    handleNew() {
+        this.shuffle();
+    }
+
+    handleRestart() {
+        this.deal();
+    }
+
+    handleUndo() {
+
     }
 
     componentDidMount() {
-        this.handleNewGame();
-        console.log(svgMap)
+
     }
 
     render() {
         return (
             <div className="playground">
-                <nav className="sidenav">
-                    <img src={svgMap['./new_game.svg']} alt="new game"/>
-                    <img src={svgMap['./restart.svg']} alt="restart"/>
-                    <img src={svgMap['./undo.svg']} alt="undo" style={{opacity: 0.25}}/>
-                </nav>
+                <Navbar
+                    onNew={this.handleNew}
+                    onRestart={this.handleRestart}
+                    onUndo={this.handleUndo}
+                ></Navbar>
                 <header className="header"></header>
                 <main className="main">
                     <div className="storages">
