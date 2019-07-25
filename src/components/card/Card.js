@@ -1,38 +1,39 @@
 import React, {useState} from 'react'
 import svgMap from "../../svgs";
+import { isDraggable } from '../../utils'
 
-export default function Card({card, className, index}) {
+export default function Card({card, className, cascade, index, onMove}) {
 
     const [style, setStyle] = useState({top: (index * 30) + 'px'});
 
-    const handleDragEnter = (event) => {
-        console.log('enter...')
-        event.preventDefault();
-        event.stopPropagation();
-        // setStyle({...style, border: '3px solid yellow'});
+    const handleDragStart = (event) => {
+        event.dataTransfer.setData('text/plain', event.target.name + ':' + event.target.id)
+    }
 
-        event.dataTransfer.setData('text/plain', event.target.id)
-        console.log('enter', event)
+    const handleDragEnter = (event) => {
+        event.preventDefault();
+        // setStyle({...style, border: '3px solid yellow'});
     }
 
     const handleDragOver = (event) => {
         event.preventDefault();
-        console.log('over...')
-        return false;
     }
 
     const handleDragLeave = (event) => {
-        console.log('leave...')
         event.preventDefault();
-        // setStyle({...style, border: 'none'});
     }
 
     const handleDrop = (event) => {
-        event.persist();
-        console.log('drop...')
+        const toCascade = cascade
+        const toCardname = card.name
+        const [fromCascade, fromCardname] = event.dataTransfer.getData('text').split(':')
+        if (isDraggable(toCardname, fromCardname)) {
+            onMove(fromCascade, toCascade, fromCardname)
+        }
     }
 
     const events = card.draggable ? {
+        onDragStart: handleDragStart,
         onDragEnter: handleDragEnter,
         onDragLeave: handleDragLeave,
         onDragOver: handleDragOver,
@@ -41,6 +42,7 @@ export default function Card({card, className, index}) {
 
     return (
         <img id={card.name}
+             name={cascade}
              className={className}
              style={style}
              src={svgMap['./cards/' + card.name + '.svg']}

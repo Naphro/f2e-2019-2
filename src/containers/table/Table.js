@@ -1,15 +1,16 @@
-import React from "react"
+import React from 'react'
 // import classes from "./Table.css"
 import './Table.css'
 import Foundation from '../../components/foundation/Foundation'
 import Cell from '../../components/cell/Cell'
 import Cascade from '../../components/cascade/Cascade'
 import Navbar from '../../components/navbar/Navbar'
+import { isDraggable } from '../../utils'
 
-const MAX_CARD_SIZE = 52;
+const MAX_CARD_SIZE = 52
 
 export default class Table extends React.Component {
-    constructor(props) {
+    constructor (props) {
         super(props)
         this.state = {
             cells: new Array(4).fill(null),
@@ -21,19 +22,19 @@ export default class Table extends React.Component {
         this.handleRestart = this.handleRestart.bind(this)
     }
 
-    shuffle() {
+    shuffle () {
         const cards = ['club', 'diamond', 'heart', 'spade'].map(shape => {
             return new Array(13).fill(null).map((value, index) => {
-                return shape + (index + 1);
+                return shape + (index + 1)
             })
-        }).flat();
+        }).flat()
 
-        const decks = [];
-        let length = MAX_CARD_SIZE;
+        const decks = []
+        let length = MAX_CARD_SIZE
         while (length > 0) {
-            const n = Math.floor(Math.random() * length);
-            decks.push({name: cards.splice(n, 1)[0], draggable: false});
-            length--;
+            const n = Math.floor(Math.random() * length)
+            decks.push({name: cards.splice(n, 1)[0], draggable: false})
+            length--
         }
 
         console.log(decks)
@@ -41,37 +42,37 @@ export default class Table extends React.Component {
             ...this.state,
             decks: decks
         }, () => {
-            this.deal();
+            this.deal()
         })
     }
 
-    deal() {
-        let cloneDecks = [...this.state.decks];
+    deal () {
+        let cloneDecks = [...this.state.decks]
         console.log(cloneDecks)
-        const emptyCascades = [7, 7, 7, 7, 6, 6, 6, 6];
+        const emptyCascades = [7, 7, 7, 7, 6, 6, 6, 6]
         const cascades = emptyCascades.map(size => {
-            return cloneDecks.splice(0, size);
+            return cloneDecks.splice(0, size)
         })
         this.setState({
             ...this.state,
             cascades: cascades
         }, () => {
-            this.checkDraggable();
+            this.checkDraggable()
         })
     }
 
-    checkDraggable() {
+    checkDraggable () {
         const checkedCascades = this.state.cascades.map(cascade => {
-            let prevCard = null;
-            let draggable = true;
+            let prevCard = null
+            let draggable = true
             const reversedCascade = cascade.reverse().map(card => {
                 if (draggable) {
-                    draggable = (!prevCard || this.isDraggable(card.name, prevCard.name))
-                    prevCard = card;
+                    draggable = (!prevCard || isDraggable(card.name, prevCard.name))
+                    prevCard = card
                 }
                 return {...card, draggable: draggable}
             })
-            return reversedCascade.reverse();
+            return reversedCascade.reverse()
         })
 
         this.setState({
@@ -80,46 +81,43 @@ export default class Table extends React.Component {
         })
     }
 
-    isDraggable(card, prevCard) {
-        if ((this.isBlack(card) && this.isBlack(prevCard)) || (this.isRed(card) && this.isRed(prevCard))) {
-            return false;
-        } else {
-            return this.getNumber(card) - this.getNumber(prevCard) === 1;
-        }
+    handleNew () {
+        this.shuffle()
     }
 
-    isBlack(cardname) {
-        const regexBlack = /(club)|(spade)/g;
-        return regexBlack.test(cardname);
+    handleRestart () {
+        this.deal()
     }
 
-    isRed(cardname) {
-        const regexRed = /(diamond)|(heart)/g;
-        return regexRed.test(cardname);
-    }
-
-    getNumber(cardname) {
-        const regex = /\d/g;
-        return cardname.match(regex).join('');
-    }
-
-    handleNew() {
-        this.shuffle();
-    }
-
-    handleRestart() {
-        this.deal();
-    }
-
-    handleUndo() {
+    handleUndo () {
 
     }
 
-    componentDidMount() {
+    handleMove = (from, to, card) => {
+        const newCascades = this.deepClone(this.state.cascades)
+        const fromCards = this.state.cascades[from]
+        const oldIndex = fromCards.map(card => card.name).indexOf(card)
+
+        const moveCards = fromCards.slice(oldIndex)
+        newCascades[to] = newCascades[to].concat(moveCards)
+        newCascades[from] = newCascades[from].filter(card => {
+            return !moveCards.some(move => card.name === move.name)
+        })
+        this.setState({
+            ...this.state,
+            cascades: newCascades
+        }, this.checkDraggable)
+    }
+
+    componentDidMount () {
 
     }
 
-    render() {
+    deepClone (obj) {
+        return JSON.parse(JSON.stringify(obj))
+    }
+
+    render () {
         return (
             <div className="playground">
                 <Navbar
@@ -140,7 +138,7 @@ export default class Table extends React.Component {
                     <div className="cascades">
                         {
                             this.state.cascades.map((item, index) => (
-                                <Cascade key={index} cards={item}></Cascade>)
+                                <Cascade key={index} cards={item} cascadeKey={index} onMove={this.handleMove}></Cascade>)
                             )
                         }
                     </div>
