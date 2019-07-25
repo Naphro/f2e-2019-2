@@ -1,8 +1,19 @@
-export const isDraggable = (cardname, prevCardname) => {
-    if ((isBlack(cardname) && isBlack(prevCardname)) || (isRed(cardname) && isRed(prevCardname))) {
+export const isMovable = (fromCardname, toCardname) => {
+    return true;
+    if ((isBlack(toCardname) && isBlack(fromCardname)) || (isRed(toCardname) && isRed(fromCardname))) {
         return false
     } else {
-        return getNumber(cardname) - getNumber(prevCardname) === 1
+        return getNumber(toCardname) - getNumber(fromCardname) === 1
+    }
+}
+
+export const isFoundationMovable = (fromCardname, toCardname) => {
+    if (toCardname === null) {
+        return +getNumber(fromCardname) === 1
+    } else if ((isBlack(toCardname) && isRed(fromCardname)) || (isRed(toCardname) && isBlack(fromCardname))) {
+        return false
+    } else {
+        return getNumber(fromCardname) - getNumber(toCardname) === 1
     }
 }
 
@@ -19,4 +30,8 @@ export const isRed = (cardname) => {
 export const getNumber = (cardname) => {
     const regex = /\d/g
     return cardname.match(regex).join('')
+}
+
+export const deepClone = (obj) => {
+    return JSON.parse(JSON.stringify(obj))
 }

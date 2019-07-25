@@ -8,8 +8,16 @@
     font-size: 75px;
     font-weight: bold;
     color: rgba(255, 255, 255, 0.5);
+    position: relative;
 }
 
 .foundation::after {
     content: 'A';
+}
+
+.foundation__card {
+    position: absolute;
+    top: 0;
+    right: 0;
+    user-select: none;
 }

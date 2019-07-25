@@ -1,54 +1,61 @@
 import React, {useState} from 'react'
 import svgMap from "../../svgs";
-import { isDraggable } from '../../utils'
+import {isMovable, isFoundationMovable} from '../../utils'
+import constant from '../../costants'
 
-export default function Card({card, className, cascade, index, onMove}) {
+export default function Card({card, className, index, onMove, onMoveToFoundation}) {
 
     const [style, setStyle] = useState({top: (index * 30) + 'px'});
 
     const handleDragStart = (event) => {
-        event.dataTransfer.setData('text/plain', event.target.name + ':' + event.target.id)
-    }
-
-    const handleDragEnter = (event) => {
-        event.preventDefault();
-        // setStyle({...style, border: '3px solid yellow'});
+        event.dataTransfer.setData('text/plain', JSON.stringify(card))
     }
 
     const handleDragOver = (event) => {
         event.preventDefault();
     }
 
-    const handleDragLeave = (event) => {
-        event.preventDefault();
-    }
-
     const handleDrop = (event) => {
-        const toCascade = cascade
-        const toCardname = card.name
-        const [fromCascade, fromCardname] = event.dataTransfer.getData('text').split(':')
-        if (isDraggable(toCardname, fromCardname)) {
-            onMove(fromCascade, toCascade, fromCardname)
+        const text = event.dataTransfer.getData('text');
+        const fromCard = JSON.parse(text);
+        const toCard = card;
+        console.log(fromCard, toCard)
+        switch (card.belong) {
+            case constant.IN_CASCADE:
+                if (isMovable(fromCard.name, toCard.name)) {
+                    onMove(fromCard.belongIndex, toCard.belongIndex, fromCard.name)
+                }
+                break;
+            case constant.IN_FOUNDATION:
+                // if (isFoundationMovable(fromCard.name, toCard.name)) {
+                //     onMoveToFoundation(fromCard.belongIndex, toCard.belongIndex, fromCard.name)
+                // }
+                break;
+            case constant.IN_CELL:
+                break;
+            default:
         }
     }
 
-    const events = card.draggable ? {
+    const isDraggable = card.draggable && card.belong === constant.IN_CASCADE;
+
+    const dragEvents = isDraggable ? {
         onDragStart: handleDragStart,
-        onDragEnter: handleDragEnter,
-        onDragLeave: handleDragLeave,
         onDragOver: handleDragOver,
+    } : null;
+
+    const dropEvents = isDraggable ? {
         onDrop: handleDrop
     } : null;
 
     return (
-        <img id={card.name}
-             name={cascade}
-             className={className}
+        <img className={className}
              style={style}
              src={svgMap['./cards/' + card.name + '.svg']}
              alt="card"
-             draggable={card.draggable}
-             {...events}
+             draggable={isDraggable}
+             {...dragEvents}
+             {...dropEvents}
         />
     )
 }
