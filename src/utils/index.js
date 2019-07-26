@@ -24,7 +24,7 @@ export const isMovable = (fromCard, toCard) => {
             return getNumber(toCardname) - getNumber(fromCardname) === 1
         }
     } else if (toCard.belong === IN_CELL) {
-
+        return true;
     }
 }
 

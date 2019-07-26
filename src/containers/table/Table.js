@@ -5,11 +5,11 @@ import Foundation from '../../components/foundation/Foundation'
 import Cell from '../../components/cell/Cell'
 import Cascade from '../../components/cascade/Cascade'
 import Navbar from '../../components/navbar/Navbar'
-import {isMovable, deepClone} from '../../utils'
+import { isMovable, deepClone } from '../../utils'
 import { IN_FOUNDATION, IN_CASCADE, IN_CELL, MAX_CARD_SIZE } from '../../costants'
 
 export default class Table extends React.Component {
-    constructor(props) {
+    constructor (props) {
         super(props)
         this.state = {
             cells: new Array(4).fill([]),
@@ -21,15 +21,15 @@ export default class Table extends React.Component {
         this.handleRestart = this.handleRestart.bind(this)
     }
 
-    shuffle() {
+    shuffle () {
         const cards = ['club', 'diamond', 'heart', 'spade'].map(shape => {
             return new Array(13).fill(null).map((value, index) => {
                 return shape + (index + 1)
             })
         }).flat()
 
-        const decks = [];
-        let length = MAX_CARD_SIZE;
+        const decks = []
+        let length = MAX_CARD_SIZE
         while (length > 0) {
             const n = Math.floor(Math.random() * length)
             decks.push({
@@ -51,7 +51,7 @@ export default class Table extends React.Component {
         })
     }
 
-    deal() {
+    deal () {
         let cloneDecks = [...this.state.decks]
         console.log(cloneDecks)
         const emptyCascades = [7, 7, 7, 7, 6, 6, 6, 6]
@@ -64,13 +64,13 @@ export default class Table extends React.Component {
             ...this.state,
             cascades: cascades,
             cells: new Array(4).fill([]),
-            foundations: new Array(4).fill([]),
+            foundations: new Array(4).fill([])
         }, () => {
             this.checkDraggable()
         })
     }
 
-    checkDraggable() {
+    checkDraggable () {
         const checkedCascades = this.state.cascades.map(cascade => {
             let prevCard = null
             let enable = true
@@ -90,60 +90,84 @@ export default class Table extends React.Component {
         })
     }
 
-    handleNew() {
+    handleNew () {
         this.shuffle()
     }
 
-    handleRestart() {
+    handleRestart () {
         this.deal()
     }
 
-    handleUndo() {
+    handleUndo () {
 
     }
 
     handleMove = (fromCard, toCard) => {
         switch (toCard.belong) {
             case IN_CASCADE:
-               this.moveToCascade(fromCard, toCard)
-                break;
+                this.moveToCascade(fromCard, toCard)
+                break
             case IN_FOUNDATION:
-               this.moveToFoundation(fromCard, toCard)
-                break;
+                this.moveToFoundation(fromCard, toCard)
+                break
+            case IN_CELL:
+                this.moveToCell(fromCard, toCard)
+                break
             default:
         }
     }
 
     moveToCascade = (fromCard, toCard) => {
-        const fromRegionIdx = fromCard.belongIndex;
-        const toRegionIdx = toCard.belongIndex;
-        const fromCards = this.state.cascades[fromRegionIdx]
-        const oldIndex = fromCards.map(card => card.name).indexOf(fromCard.name)
-        const newCascades = deepClone(this.state.cascades)
+        const fromRegionIdx = fromCard.belongIndex
+        const toRegionIdx = toCard.belongIndex
 
-        const moveCards = fromCards.slice(oldIndex)
-            .map(card => ({...card, belongIndex: toCard.belongIndex}))
-        newCascades[toRegionIdx] = newCascades[toRegionIdx].concat(moveCards)
-        newCascades[fromRegionIdx] = newCascades[fromRegionIdx].filter(card => {
-            return !moveCards.some(move => card.name === move.name)
-        })
+        if (fromCard.belong === IN_CASCADE) {
+            const fromCards = this.state.cascades[fromRegionIdx]
+            const oldIndex = fromCards.map(card => card.name).indexOf(fromCard.name)
+            const newCascades = deepClone(this.state.cascades)
 
-        this.setState({
-            ...this.state,
-            cascades: newCascades
-        }, this.checkDraggable)
+            const moveCards = fromCards.slice(oldIndex)
+                .map(card => ({...card, belongIndex: toCard.belongIndex}))
+            newCascades[toRegionIdx] = newCascades[toRegionIdx].concat(moveCards)
+            newCascades[fromRegionIdx] = newCascades[fromRegionIdx].filter(card => {
+                return !moveCards.some(move => card.name === move.name)
+            })
+
+            this.setState({
+                ...this.state,
+                cascades: newCascades
+            }, this.checkDraggable)
+        } else if (fromCard.belong === IN_CELL) {
+            const fromCard = this.state.cells[fromRegionIdx][0]
+            const newCascades = deepClone(this.state.cascades)
+            const newCells = deepClone(this.state.cells)
+            const moveCard = {
+                ...fromCard,
+                droppable: true,
+                draggable: true,
+                belong: IN_CASCADE,
+                belongIndex: toCard.belongIndex
+            }
+            newCascades[toRegionIdx].push(moveCard);
+            newCells[fromRegionIdx].pop();
+
+            this.setState({
+                ...this.state,
+                cascades: newCascades,
+                cells: newCells
+            }, this.checkDraggable)
+        }
     }
 
     moveToFoundation = (fromCard, toCard) => {
-        const fromRegionIdx = fromCard.belongIndex;
-        const toRegionIdx = toCard.belongIndex;
+        const fromRegionIdx = fromCard.belongIndex
+        const toRegionIdx = toCard.belongIndex
         const fromCards = this.state.cascades[fromRegionIdx]
         const oldIndex = fromCards.map(card => card.name).indexOf(fromCard.name)
 
         if (oldIndex === fromCards.length - 1) {
             const newCascades = deepClone(this.state.cascades)
             const newFoundations = deepClone(this.state.foundations)
-            console.log(fromCards.slice(oldIndex))
             const moveCards = fromCards.slice(oldIndex).map(card => ({
                 ...card,
                 draggable: false,
@@ -165,11 +189,40 @@ export default class Table extends React.Component {
         }
     }
 
-    componentDidMount() {
+    moveToCell = (fromCard, toCard) => {
+        const fromRegionIdx = fromCard.belongIndex
+        const toRegionIdx = toCard.belongIndex
+        const fromCards = this.state.cascades[fromRegionIdx]
+        const oldIndex = fromCards.map(card => card.name).indexOf(fromCard.name)
+
+        if (oldIndex === fromCards.length - 1) {
+            const newCascades = deepClone(this.state.cascades)
+            const newCells = deepClone(this.state.cells)
+            const moveCards = fromCards.slice(oldIndex).map(card => ({
+                ...card,
+                draggable: true,
+                droppable: false,
+                belong: IN_CELL,
+                belongIndex: toRegionIdx
+            }))
+            newCells[toRegionIdx] = newCells[toRegionIdx].concat(moveCards)
+            newCascades[fromRegionIdx] = newCascades[fromRegionIdx].filter(card => {
+                return !moveCards.some(move => card.name === move.name)
+            })
+
+            this.setState({
+                ...this.state,
+                cells: newCells,
+                cascades: newCascades
+            }, this.checkDraggable)
+        }
+    }
+
+    componentDidMount () {
 
     }
 
-    render() {
+    render () {
         return (
             <div className="playground">
                 <Navbar
@@ -181,7 +234,14 @@ export default class Table extends React.Component {
                 <main className="main">
                     <div className="storages">
                         {
-                            this.state.cells.map((item, index) => (<Cell key={index}></Cell>))
+                            this.state.cells.map((item, index) => (
+                                <Cell
+                                    key={index}
+                                    cell={index}
+                                    cards={item}
+                                    onMove={this.handleMove}
+                                ></Cell>)
+                            )
                         }
                         {
                             this.state.foundations.map((item, index) => (

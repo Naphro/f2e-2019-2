@@ -35,7 +35,6 @@ export default function Foundation({foundation, onMove, cards}) {
                 card ? (
                     <Card
                         card={card}
-                        foundation={foundation}
                         className="foundation__card"
                         onMove={onMove}
                     ></Card>
