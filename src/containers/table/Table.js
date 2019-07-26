@@ -42,7 +42,6 @@ export default class Table extends React.Component {
             length--
         }
 
-        console.log(decks)
         this.setState({
             ...this.state,
             decks: decks
@@ -53,13 +52,13 @@ export default class Table extends React.Component {
 
     deal () {
         let cloneDecks = [...this.state.decks]
-        console.log(cloneDecks)
         const emptyCascades = [7, 7, 7, 7, 6, 6, 6, 6]
         const cascades = emptyCascades.map((size, index) => {
             return cloneDecks.splice(0, size).map(
-                card => ({...card, belongIndex: index})
+                card => ({...card, draggable: false, droppable: false, belong: IN_CASCADE, belongIndex: index})
             )
         })
+
         this.setState({
             ...this.state,
             cascades: cascades,
@@ -73,13 +72,19 @@ export default class Table extends React.Component {
     checkDraggable () {
         const checkedCascades = this.state.cascades.map(cascade => {
             let prevCard = null
-            let enable = true
-            const reversedCascade = cascade.reverse().map(card => {
-                if (enable) {
-                    enable = (!prevCard || isMovable(prevCard.name, card.name))
+            let draggable = true
+
+            const reversedCascade = cascade.reverse().map((card, index) => {
+                if (draggable) {
+                    draggable = (!prevCard || isMovable(prevCard, card))
                     prevCard = card
                 }
-                return {...card, draggable: enable, droppable: enable}
+
+                return {
+                    ...card,
+                    draggable: draggable,
+                    droppable: index === 0
+                }
             })
             return reversedCascade.reverse()
         })
@@ -87,7 +92,7 @@ export default class Table extends React.Component {
         this.setState({
             ...this.state,
             cascades: checkedCascades
-        })
+        }, this.doesWin)
     }
 
     handleNew () {
@@ -117,6 +122,27 @@ export default class Table extends React.Component {
         }
     }
 
+    // afterMove = () => {
+    //     if (!this.doesWin) {
+    //         this.checkDraggable()
+    //     }
+    // }
+
+    doesWin = () => {
+        const finishCounts = this.state.foundations.reduce((sum, foundation) => {
+            return sum + foundation.length;
+        }, 0)
+
+        console.log(finishCounts)
+
+        if (finishCounts === MAX_CARD_SIZE) {
+            alert('YOU WIN !');
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     moveToCascade = (fromCard, toCard) => {
         const fromRegionIdx = fromCard.belongIndex
         const toRegionIdx = toCard.belongIndex
@@ -125,7 +151,6 @@ export default class Table extends React.Component {
             const fromCards = this.state.cascades[fromRegionIdx]
             const oldIndex = fromCards.map(card => card.name).indexOf(fromCard.name)
             const newCascades = deepClone(this.state.cascades)
-
             const moveCards = fromCards.slice(oldIndex)
                 .map(card => ({...card, belongIndex: toCard.belongIndex}))
             newCascades[toRegionIdx] = newCascades[toRegionIdx].concat(moveCards)
@@ -148,8 +173,8 @@ export default class Table extends React.Component {
                 belong: IN_CASCADE,
                 belongIndex: toCard.belongIndex
             }
-            newCascades[toRegionIdx].push(moveCard);
-            newCells[fromRegionIdx].pop();
+            newCascades[toRegionIdx].push(moveCard)
+            newCells[fromRegionIdx].pop()
 
             this.setState({
                 ...this.state,
@@ -240,8 +265,8 @@ export default class Table extends React.Component {
                                     cell={index}
                                     cards={item}
                                     onMove={this.handleMove}
-                                ></Cell>)
-                            )
+                                ></Cell>
+                            ))
                         }
                         {
                             this.state.foundations.map((item, index) => (
