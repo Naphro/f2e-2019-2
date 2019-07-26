@@ -2,7 +2,7 @@ import React from 'react'
 import './Cascade.css'
 import Card from '../card/Card'
 
-export default function Cascade({cards, cascadeKey, onMove, handleMoveToFoundation}) {
+export default function Cascade({cards, cascadeKey, onMove}) {
     return (
         <div className="cascade">
             {
@@ -13,9 +13,8 @@ export default function Cascade({cards, cascadeKey, onMove, handleMoveToFoundati
                             className="cascade__card"
                             cascade={cascadeKey}
                             index={index}
-                            key={card.name + index}
+                            key={card.name}
                             onMove={onMove}
-                            onMoveToFoundation={handleMoveToFoundation}
                         ></Card>
                     )
                 })
