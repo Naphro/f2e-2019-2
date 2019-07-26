@@ -1,19 +1,21 @@
-import constant from '../costants'
+import {IN_FOUNDATION, IN_CASCADE, IN_CELL} from '../costants'
 
 export const isMovable = (fromCard, toCard) => {
-    return true;
-
     const fromCardname = fromCard.name
     const toCardname = toCard.name
-    if (toCard.belong === constant.IN_FOUNDATION) {
+
+    if (toCard.belong === IN_FOUNDATION) {
         if (toCardname === null) {
             return +getNumber(fromCardname) === 1
-        } else if ((isBlack(toCardname) && isRed(fromCardname)) || (isRed(toCardname) && isBlack(fromCardname))) {
+        } else if (!isSameSuit(fromCardname, toCardname)) {
             return false
         } else {
             return getNumber(fromCardname) - getNumber(toCardname) === 1
         }
-    } else if (toCard.belong === constant.IN_CASCADE) {
+    } else if (toCard.belong === IN_CASCADE) {
+
+        return true;
+
         if (toCardname === null) {
 
         } else if ((isBlack(toCardname) && isBlack(fromCardname)) || (isRed(toCardname) && isRed(fromCardname))) {
@@ -21,7 +23,16 @@ export const isMovable = (fromCard, toCard) => {
         } else {
             return getNumber(toCardname) - getNumber(fromCardname) === 1
         }
+    } else if (toCard.belong === IN_CELL) {
+
     }
+}
+
+export const isSameSuit = (card1, card2) => {
+    const regex = /\d/g
+    const suit1 = card1.replace(regex, '');
+    const suit2 = card2.replace(regex, '')
+    return suit1 === suit2
 }
 
 export const isBlack = (cardname) => {
