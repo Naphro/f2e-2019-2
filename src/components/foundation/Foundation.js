@@ -1,9 +1,10 @@
 import React from 'react'
 import Card from '../card/Card'
 import './Foundation.css'
-import {isFoundationMovable} from "../../utils";
+import { isMovable } from '../../utils'
+import { IN_FOUNDATION} from '../../costants'
 
-export default function Foundation({foundation, onMoveToFoundation, cards}) {
+export default function Foundation({foundation, onMove, cards}) {
     const card = cards.length === 0 ? null : cards[cards.length - 1];
 
     const handleDragOver = (event) => {
@@ -12,21 +13,15 @@ export default function Foundation({foundation, onMoveToFoundation, cards}) {
 
     const handleDrop = (event) => {
         event.preventDefault();
-        const toFoundation = foundation
         const text = event.dataTransfer.getData('text')
         const fromCard = JSON.parse(text)
-        console.log('handleDrop in foundation', fromCard, toFoundation)
-        if (isFoundationMovable(fromCard.name, card ? card.name : null)) {
-            console.log('isFoundationMovable...')
-            onMoveToFoundation(fromCard.belongIndex, toFoundation, fromCard.name)
+        const toCard = {name: null, belong: IN_FOUNDATION, belongIndex: foundation}
+        if (isMovable(fromCard, toCard)) {
+            onMove(fromCard, toCard)
         }
     }
 
-    const handleMove = (event) => {
-
-    }
-
-    const dropEvents = {
+    const dropEvents = card ? null : {
         onDragOver: handleDragOver,
         onDrop: handleDrop
     }
@@ -42,7 +37,7 @@ export default function Foundation({foundation, onMoveToFoundation, cards}) {
                         card={card}
                         foundation={foundation}
                         className="foundation__card"
-                        onMove={handleMove()}
+                        onMove={onMove}
                     ></Card>
                 ) : null
             }

@@ -6,7 +6,7 @@ import Cell from '../../components/cell/Cell'
 import Cascade from '../../components/cascade/Cascade'
 import Navbar from '../../components/navbar/Navbar'
 import {isMovable, deepClone} from '../../utils'
-import constant from '../../costants'
+import { IN_FOUNDATION, IN_CASCADE, IN_CELL, MAX_CARD_SIZE } from '../../costants'
 
 export default class Table extends React.Component {
     constructor(props) {
@@ -29,13 +29,14 @@ export default class Table extends React.Component {
         }).flat()
 
         const decks = [];
-        let length = constant.MAX_CARD_SIZE;
+        let length = MAX_CARD_SIZE;
         while (length > 0) {
             const n = Math.floor(Math.random() * length)
             decks.push({
                 name: cards.splice(n, 1)[0],
                 draggable: false,
-                belong: constant.IN_CASCADE,
+                droppable: false,
+                belong: IN_CASCADE,
                 belongIndex: null
             })
             length--
@@ -72,13 +73,13 @@ export default class Table extends React.Component {
     checkDraggable() {
         const checkedCascades = this.state.cascades.map(cascade => {
             let prevCard = null
-            let draggable = true
+            let enable = true
             const reversedCascade = cascade.reverse().map(card => {
-                if (draggable) {
-                    draggable = (!prevCard || isMovable(prevCard.name, card.name))
+                if (enable) {
+                    enable = (!prevCard || isMovable(prevCard.name, card.name))
                     prevCard = card
                 }
-                return {...card, draggable: draggable}
+                return {...card, draggable: enable, droppable: enable}
             })
             return reversedCascade.reverse()
         })
@@ -101,16 +102,29 @@ export default class Table extends React.Component {
 
     }
 
-    handleMove = (fromCascade, toCascade, fromCardname) => {
-        console.log(fromCascade, toCascade)
+    handleMove = (fromCard, toCard) => {
+        switch (toCard.belong) {
+            case IN_CASCADE:
+               this.moveToCascade(fromCard, toCard)
+                break;
+            case IN_FOUNDATION:
+               this.moveToFoundation(fromCard, toCard)
+                break;
+            default:
+        }
+    }
+
+    moveToCascade = (fromCard, toCard) => {
+        const fromRegionIdx = fromCard.belongIndex;
+        const toRegionIdx = toCard.belongIndex;
+        const fromCards = this.state.cascades[fromRegionIdx]
+        const oldIndex = fromCards.map(card => card.name).indexOf(fromCard.name)
         const newCascades = deepClone(this.state.cascades)
-        const fromCards = this.state.cascades[fromCascade]
-        const oldIndex = fromCards.map(card => card.name).indexOf(fromCardname)
 
         const moveCards = fromCards.slice(oldIndex)
-            .map(card => ({...card, belongIndex: toCascade}))
-        newCascades[toCascade] = newCascades[toCascade].concat(moveCards)
-        newCascades[fromCascade] = newCascades[fromCascade].filter(card => {
+            .map(card => ({...card, belongIndex: toCard.belongIndex}))
+        newCascades[toRegionIdx] = newCascades[toRegionIdx].concat(moveCards)
+        newCascades[fromRegionIdx] = newCascades[fromRegionIdx].filter(card => {
             return !moveCards.some(move => card.name === move.name)
         })
 
@@ -120,20 +134,26 @@ export default class Table extends React.Component {
         }, this.checkDraggable)
     }
 
-    handleMoveToFoundation = (fromCascade, toFoundation, fromCardname) => {
-        const newFoundations = deepClone(this.state.foundations)
-        const newCascades = deepClone(this.state.cascades)
-        const fromCards = this.state.cascades[fromCascade]
-        const oldIndex = fromCards.map(card => card.name).indexOf(fromCardname)
+    moveToFoundation = (fromCard, toCard) => {
+        const fromRegionIdx = fromCard.belongIndex;
+        const toRegionIdx = toCard.belongIndex;
+        const fromCards = this.state.cascades[fromRegionIdx]
+        const oldIndex = fromCards.map(card => card.name).indexOf(fromCard.name)
 
         if (oldIndex === fromCards.length - 1) {
+            const newCascades = deepClone(this.state.cascades)
+            const newFoundations = deepClone(this.state.foundations)
+            console.log(fromCards.slice(oldIndex))
             const moveCards = fromCards.slice(oldIndex).map(card => ({
                 ...card,
                 draggable: false,
-                belong: constant.IN_FOUNDATION
+                droppable: true,
+                belong: IN_FOUNDATION,
+                belongIndex: toRegionIdx
             }))
-            newFoundations[toFoundation] = newFoundations[toFoundation].concat(moveCards)
-            newCascades[fromCascade] = newCascades[fromCascade].filter(card => {
+            console.log(moveCards)
+            newFoundations[toRegionIdx] = newFoundations[toRegionIdx].concat(moveCards)
+            newCascades[fromRegionIdx] = newCascades[fromRegionIdx].filter(card => {
                 return !moveCards.some(move => card.name === move.name)
             })
 
@@ -169,7 +189,7 @@ export default class Table extends React.Component {
                                     key={index}
                                     foundation={index}
                                     cards={item}
-                                    onMoveToFoundation={this.handleMoveToFoundation}
+                                    onMove={this.handleMove}
                                 ></Foundation>)
                             )
                         }
@@ -182,7 +202,6 @@ export default class Table extends React.Component {
                                     cascadeKey={index}
                                     cards={item}
                                     onMove={this.handleMove}
-                                    onMoveToFoundation={this.handleMoveToFoundation}
                                 ></Cascade>)
                             )
                         }
