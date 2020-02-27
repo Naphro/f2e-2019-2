@@ -1,48 +1,47 @@
 .playground {
-    height: 100vh;
-    background: linear-gradient(to bottom, #525252, #001F1D);
-    display: flex;
-    flex-direction: row-reverse;
+  height: 100vh;
+  background: linear-gradient(to bottom, #525252, #001f1d);
+  display: flex;
+  flex-direction: row-reverse;
 }
 
 .header {
-
 }
 
 .sidenav {
-    width: 105px;
-    height: 100%;
-    background: #001F1D;
-    display: flex;
-    flex-direction: column;
-    padding: 120px 0;
+  width: 105px;
+  height: 100%;
+  background: #001f1d;
+  display: flex;
+  flex-direction: column;
+  padding: 120px 0;
 }
 
 .sidenav img {
-    margin-top: 49px;
+  margin-top: 49px;
 }
 
 .main {
-    padding: 120px 60px;
+  padding: 120px 60px;
 }
 
 .storages {
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .storages > div {
-    margin-left: 25px;
+  margin-left: 25px;
 }
 
 .cascades {
-    display: flex;
-    justify-content: flex-end;
-    height: calc(100vh - 120px - 158px);
-    margin-top: 47px;
+  display: flex;
+  justify-content: flex-end;
+  height: calc(100vh - 120px - 158px);
+  margin-top: 47px;
 }
 
 .cascades > div {
-    margin-left: 25px;
+  margin-left: 25px;
 }

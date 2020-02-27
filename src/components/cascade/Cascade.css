@@ -1,11 +1,11 @@
 .cascade {
-    width: 110px;
-    position: relative;
+  width: 110px;
+  position: relative;
 }
 
 .cascade__card {
-    position: absolute;
-    top: 0;
-    right: 0;
-    user-select: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  user-select: none;
 }

@@ -1,9 +1,9 @@
-const cache = {};
+const cache = {}
 
 function importAll(r) {
-    r.keys().forEach(key => cache[key] = r(key));
+  r.keys().forEach(key => (cache[key] = r(key)))
 }
 
-importAll(require.context('../svgs/', true, /\.svg$/));
+importAll(require.context('../svgs/', true, /\.svg$/))
 
-export default cache;
+export default cache
