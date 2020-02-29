@@ -30,6 +30,8 @@ export const isMovable = (fromCard, toCard) => {
     }
   } else if (toCard.belong === IN_CELL) {
     return true
+  } else {
+    return false
   }
 }
 

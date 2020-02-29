@@ -3,6 +3,8 @@
   background: linear-gradient(to bottom, #525252, #001f1d);
   display: flex;
   flex-direction: row-reverse;
+  overflow-x: scroll;
+  width: auto;
 }
 
 .header {

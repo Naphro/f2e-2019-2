@@ -1,0 +1,10 @@
+.card {
+  position: absolute;
+  top: 0;
+  right: 0;
+  user-select: none;
+}
+
+[draggable='true'] {
+  cursor: pointer;
+}

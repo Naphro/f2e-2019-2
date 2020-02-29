@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import svgMap from '../../svgs'
 import { isMovable } from '../../utils'
+import './Card.css'
 
-export default function Card({ card, className, index, onMove }) {
-  const [style, setStyle] = useState({ top: index * 30 + 'px' })
+export default function Card(props) {
+  const { card, onMove, className, children } = props
 
   const handleDragStart = event => {
+    event.stopPropagation()
     event.dataTransfer.setData('text/plain', JSON.stringify(card))
   }
 
@@ -17,7 +19,7 @@ export default function Card({ card, className, index, onMove }) {
     const text = event.dataTransfer.getData('text')
     const fromCard = JSON.parse(text)
     const toCard = card
-    console.log(fromCard, toCard)
+
     if (isMovable(fromCard, toCard)) {
       onMove(fromCard, toCard)
     }
@@ -37,14 +39,18 @@ export default function Card({ card, className, index, onMove }) {
     : null
 
   return (
-    <img
-      className={className}
-      style={style}
-      src={svgMap['./cards/' + card.name + '.svg']}
-      alt="card"
+    <div
+      className={`${className ? className : ''} card`}
       draggable={card.draggable}
       {...dragEvents}
       {...dropEvents}
-    />
+    >
+      <img
+        src={svgMap['./cards/' + card.name + '.svg']}
+        alt="card"
+        draggable={false}
+      />
+      {children}
+    </div>
   )
 }

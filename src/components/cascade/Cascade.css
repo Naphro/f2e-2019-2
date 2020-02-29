@@ -4,8 +4,9 @@
 }
 
 .cascade__card {
-  position: absolute;
+  top: 30px;
+}
+
+.cascade > .cascade__card {
   top: 0;
-  right: 0;
-  user-select: none;
 }

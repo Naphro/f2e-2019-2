@@ -151,8 +151,6 @@ export default class Table extends React.Component {
       return sum + foundation.length
     }, 0)
 
-    console.log(finishCounts)
-
     if (finishCounts === MAX_CARD_SIZE) {
       alert('YOU WIN !')
       return true
@@ -171,7 +169,7 @@ export default class Table extends React.Component {
       const newCascades = deepClone(this.state.cascades)
       const moveCards = fromCards
         .slice(oldIndex)
-        .map(card => ({ ...card, belongIndex: toCard.belongIndex }))
+        .map(card => ({ ...card, belongIndex: toRegionIdx }))
       newCascades[toRegionIdx] = newCascades[toRegionIdx].concat(moveCards)
       newCascades[fromRegionIdx] = newCascades[fromRegionIdx].filter(card => {
         return !moveCards.some(move => card.name === move.name)
@@ -212,35 +210,61 @@ export default class Table extends React.Component {
   moveToFoundation = (fromCard, toCard) => {
     const fromRegionIdx = fromCard.belongIndex
     const toRegionIdx = toCard.belongIndex
-    const fromCards = this.state.cascades[fromRegionIdx]
-    const oldIndex = fromCards.map(card => card.name).indexOf(fromCard.name)
 
-    if (oldIndex === fromCards.length - 1) {
-      const newCascades = deepClone(this.state.cascades)
+    if (fromCard.belong === IN_CELL) {
+      const fromCard = this.state.cells[fromRegionIdx][0]
       const newFoundations = deepClone(this.state.foundations)
-      const moveCards = fromCards.slice(oldIndex).map(card => ({
-        ...card,
+      const newCells = deepClone(this.state.cells)
+      const moveCard = {
+        ...fromCard,
         draggable: false,
         droppable: true,
         belong: IN_FOUNDATION,
         belongIndex: toRegionIdx,
-      }))
-      console.log(moveCards)
-      newFoundations[toRegionIdx] = newFoundations[toRegionIdx].concat(
-        moveCards
-      )
-      newCascades[fromRegionIdx] = newCascades[fromRegionIdx].filter(card => {
-        return !moveCards.some(move => card.name === move.name)
-      })
+      }
+
+      newFoundations[toRegionIdx].push(moveCard)
+      newCells[fromRegionIdx].pop()
 
       this.setState(
         {
           ...this.state,
           foundations: newFoundations,
-          cascades: newCascades,
+          cells: newCells,
         },
         this.checkDraggable
       )
+    } else if (fromCard.belong === IN_CASCADE) {
+      const fromCards = this.state.cascades[fromRegionIdx]
+      const oldIndex = fromCards.map(card => card.name).indexOf(fromCard.name)
+
+      if (oldIndex === fromCards.length - 1) {
+        const newCascades = deepClone(this.state.cascades)
+        const newFoundations = deepClone(this.state.foundations)
+        const moveCards = fromCards.slice(oldIndex).map(card => ({
+          ...card,
+          draggable: false,
+          droppable: true,
+          belong: IN_FOUNDATION,
+          belongIndex: toRegionIdx,
+        }))
+
+        newFoundations[toRegionIdx] = newFoundations[toRegionIdx].concat(
+          moveCards
+        )
+        newCascades[fromRegionIdx] = newCascades[fromRegionIdx].filter(card => {
+          return !moveCards.some(move => card.name === move.name)
+        })
+
+        this.setState(
+          {
+            ...this.state,
+            foundations: newFoundations,
+            cascades: newCascades,
+          },
+          this.checkDraggable
+        )
+      }
     }
   }
 
